@@ -5,7 +5,7 @@
 #define EditID 2
 #define IDM_HELLO 1
 #define IDM_CLEAR 2
-#define IDM_GETETXT 3
+#define IDM_GETTEXT 3
 #define IDM_EXIT 4
 
 LRESULT CALLBACK WndProc(
@@ -16,6 +16,9 @@ LRESULT CALLBACK WndProc(
 	);
 
 HINSTANCE hInstance = GetModuleHandle(NULL);
+HWND hWndEdit;
+HWND hWndButton;
+CHAR buffer[512];
 
 INT WinMain(HINSTANCE hInstance = GetModuleHandle(NULL), HINSTANCE hPrevInstance = NULL, LPSTR lpCmdLine = GetCommandLineA(), INT cmdShow = SW_SHOWDEFAULT) {
 
@@ -55,19 +58,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		PostQuitMessage(NULL);
 	}
 	else if (uMsg == WM_CREATE) {
-		HWND hWndEdit = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("edit"), NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL, 50, 35, 200, 25, hwnd, (HMENU)8, hInstance, NULL);
+		hWndEdit = CreateWindowEx(WS_EX_CLIENTEDGE, TEXT("edit"), NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL, 50, 35, 200, 25, hwnd, (HMENU)8, hInstance, NULL);
 		SetFocus(hWndEdit);
-		if (LOWORD(wParam) == IDM_TEST) {
-			MessageBox(NULL, L"This is the test", L"First Window", MB_OK);
-		}
-		else if (LOWORD(wParam) == IDM_HELLO) {
-			MessageBox(NULL, L"Hello World", L"First Window", MB_OK);
-		}
-		else if (LOWORD(wParam) == IDM_GOODBYE) {
-			MessageBox(NULL, L"Bye bye", L"First Window", MB_OK);
+		hWndButton = CreateWindowEx(NULL, TEXT("button"), TEXT("My First Button"), WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 75, 70, 140, 25, hwnd, HMENU(ButtonID), hInstance, NULL);
+	}
+	else if (uMsg == WM_COMMAND) {
+		if (lParam == 0) {
+			if (LOWORD(wParam) == IDM_HELLO) {
+				SetWindowText(hWndEdit, TEXT("This is the test string"));
+			}
+			else if (LOWORD(wParam) == IDM_CLEAR) {
+				SetWindowText(hWndEdit, NULL);
+			}
+			else if (LOWORD(wParam) == IDM_GETTEXT) {
+				GetWindowText(hWndEdit, buffer, 512);
+				MessageBox(NULL, buffer, TEXT("Window Text"), MB_OK);
+			}
+			else {
+				DestroyWindow(hwnd);
+			}
 		}
 		else {
-			DestroyWindow(hwnd);
+			if (LOWORD(wParam) == ButtonID) {
+				WPARAM wp = wParam;
+				wp = wp << 16;
+				if (LOWORD(wp) == BN_CLICKED) {
+					SendMessage(hwnd, WM_COMMAND, IDM_GETTEXT, 0);
+				}
+			}
 		}
 	}
 	else {
